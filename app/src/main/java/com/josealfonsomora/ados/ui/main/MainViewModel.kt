@@ -1,13 +1,10 @@
 package com.josealfonsomora.ados.ui.main
 
-import android.database.sqlite.SQLiteDatabase
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.josealfonsomora.ados.data.ReadableSqlLite
-import com.josealfonsomora.ados.data.WritableSqlLite
-import com.josealfonsomora.ados.data.room.AdosDatabaseRoom
-import com.josealfonsomora.ados.data.sqlite.AdosDatabaseSqlite
 import com.josealfonsomora.ados.domain.Autobus
+import com.josealfonsomora.ados.domain.DeleteAutobusUseCase
+import com.josealfonsomora.ados.domain.GetAutobusesListUseCase
 import com.josealfonsomora.ados.ui.main.MainScreenState.Loaded
 import com.josealfonsomora.ados.ui.main.MainScreenState.Loading
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,10 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    @ReadableSqlLite private val sqliteReadableSqlLite: SQLiteDatabase,
-    @WritableSqlLite private val sqliteWritableSqlLite: SQLiteDatabase,
-    private val sqliteHelper: AdosDatabaseSqlite,
-    private val roomDb: AdosDatabaseRoom
+    private val getAutobusesList: GetAutobusesListUseCase,
+    private val deleteAutobus: DeleteAutobusUseCase,
 ) : ViewModel() {
 
     private var _state = MutableStateFlow<MainScreenState>(Loading)
@@ -33,15 +28,15 @@ class MainViewModel @Inject constructor(
 
     private fun fetchAutobusList() {
         viewModelScope.launch(IO) {
-            val list = sqliteHelper.getAllAutobuses()
-            _state.value = Loaded(list)
+            getAutobusesList().collect {
+                _state.value = Loaded(it)
+            }
         }
     }
 
-    fun deleteAutobus(autobus: Autobus) {
+    fun onDeleteAutobusClicked(autobus: Autobus) {
         viewModelScope.launch(IO) {
-            sqliteHelper.deleteAutobus(autobus.id)
-            fetchAutobusList()
+            deleteAutobus(autobus)
         }
     }
 }

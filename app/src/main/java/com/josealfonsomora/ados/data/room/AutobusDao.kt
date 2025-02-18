@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import com.josealfonsomora.ados.domain.Autobus
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AutobusDao {
@@ -13,7 +14,7 @@ interface AutobusDao {
     suspend fun insert(autobus: AutobusEntity)
 
     @Query("SELECT * FROM autobuses")
-    suspend fun getAll(): List<AutobusEntity>
+    fun getAll(): Flow<List<AutobusEntity>>
 
     @Delete
     suspend fun deleteAutobus(autobus: AutobusEntity)
